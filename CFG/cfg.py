@@ -1,5 +1,6 @@
 import sys
 import copy
+from typing import List
  #Usage: python cfg.py <input_file_name>
 input_file_name = sys.argv[1]
 
@@ -80,9 +81,9 @@ non_terminal = str
 # but im lazy
 # and stack T is empty on first call.
 
-def derives_to_lambda(L: non_terminal, T, P=cfg):
+def derives_to_lambda(L: non_terminal, T: List[str], P=cfg):
     # returns true if exists production rule permitting L *=> lambda
-    print(f"trace, {L=}, {T=}")
+    # print(f"trace, {L=}, {T=}")
     for prod in P:
         if prod[0] != L: continue
         if prod in T: continue
@@ -95,7 +96,7 @@ def derives_to_lambda(L: non_terminal, T, P=cfg):
             if '$' in non_term: continue
             T.append(prod)
             all_derive_lambda = derives_to_lambda(non_term, copy.deepcopy(T))
-            print(f"trace, {non_term=}, {all_derive_lambda=}")
+            # print(f"trace, {non_term=}, {all_derive_lambda=}")
             T.pop()
             if not all_derive_lambda: break
         if all_derive_lambda:
@@ -103,3 +104,35 @@ def derives_to_lambda(L: non_terminal, T, P=cfg):
     return False
 
 print(f"{derives_to_lambda('startGoal', [])=}")
+
+# seq is a valid seq of grammar elements, list
+# T is an empty set on first call of procedure
+# again, adding cfg list
+sequence = List[str]
+def first_set(seq: sequence, T, P=cfg):
+    # returns set of terminals {t in alphabet | seq => tpi},
+    # updated set 
+    # print(f"trace, {seq=}, {T=}")
+    head, tail = seq[0], seq[1:]
+    
+    if head in terminals:
+        return set(head), T
+
+    # F for first set
+    F = set()
+    if head not in T:
+        T.add(head)
+        for prod in P:
+            if prod[0] != head: continue
+            R = prod[1:]
+            if "lambda" in R:
+                continue
+            # I for ignorable
+            G, I = first_set(R, T)
+            F = F.union(G)
+    if derives_to_lambda(head, []) and len(tail) > 0:
+        G, I = first_set(tail, T)
+        F = F.union(G)
+    return F,T
+
+print(f"{first_set(['A', '$'], set())=}")
