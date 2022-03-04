@@ -136,3 +136,28 @@ def first_set(seq: sequence, T, P=cfg):
     return F,T
 
 print(f"{first_set(['A', '$'], set())=}")
+
+def follow_set(seq: sequence, P=cfg):
+    raise NotImplementedError("Follow set has not been implemented yet!")
+
+def predict_set(seq: sequence, P=cfg):
+    ps=first_set(sequence,set())
+    if derives_to_lambda(sequence[0],list()):
+        ps.union(follow_set(sequence))
+    return ps
+
+def ll1_table(P=cfg):
+    #returns a map of maps
+    #note that the rule indexes in the LL table start at 0 and not
+    #1 as seen in the lecture slides. This was done to make future list
+    #access easier
+    cntr=0
+    T=map()
+    for prod in P:
+        #ps for predict set
+        ps=predict_set(prod)
+        T[prod[0]]=map()
+        for term in ps:
+                T[prod[0]][term]=cntr
+        cntr+=1
+    return T
