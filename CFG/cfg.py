@@ -281,7 +281,17 @@ def parse_tree(P, LL1, tokens):
     return root.children[0]
 
 
-p = parse_tree(cfg, ll, ['a', 'b', 'b', 'b','b','d','d','c'])
+p = parse_tree(cfg, ll, ["oparen" ,
+"plus",
+"two",
+"oparen",
+"mult",
+"three",
+"two",
+"two",
+"cparen",
+"cparen"
+])
 p.pprint()
 
 
