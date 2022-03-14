@@ -44,7 +44,8 @@ while i < len(cfg):
                 non_terminals.append(cfg[i][j])
         elif cfg[i][j].islower():
             if not cfg[i][j] in terminals:
-                terminals.append(cfg[i][j])
+                if cfg[i][j] != "lambda":
+                    terminals.append(cfg[i][j])
         j+=1
     i += 1
 
@@ -113,11 +114,13 @@ sequence = List[str]
 def first_set(seq: sequence, T, P=cfg):
     # returns set of terminals {t in alphabet | seq => tpi},
     # updated set 
-    # print(f"trace, {seq=}, {T=}")
+    # print(f"first trace, {seq=}, {T=}")
     head, tail = seq[0], seq[1:]
     
     if head in terminals:
-        return set(head), T
+        s = set()
+        s.add(head)
+        return s, T
 
     # F for first set
     F = set()
@@ -138,9 +141,40 @@ def first_set(seq: sequence, T, P=cfg):
 
 print(f"{first_set(['A', '$'], set())=}")
 
-def follow_set(seq: sequence, P=cfg):
-    raise NotImplementedError("Follow set has not been implemented yet!")
-
+def follow_set(A: non_terminal, T: set, P=cfg):
+    if A in T:
+        return set(), T
+    T.add(A)
+    # F for follow set
+    F = set()
+    for p in P:
+        LHS, RHS = p[0], p[1:]
+        if A not in RHS:
+            continue
+        # If it's the last element in the prod rule
+        for index, gamma in enumerate(RHS):
+            if gamma == A:
+                pi = RHS[index + 1:]
+                if len(pi) > 0:
+                    # I for ignorable
+                    G, I = first_set(pi, set())
+                    F = F.union(G)
+                term_and_end = set(terminals)
+                term_and_end.add("$")
+                empty = len(pi) == 0
+                pi_in_empty = len(set(pi).intersection(term_and_end)) == 0
+                dtl = True 
+                for sym in pi:
+                    if sym in non_terminals:
+                        if not derives_to_lambda(sym, [], P):
+                            dtl = False
+                if empty or (pi_in_empty and dtl):
+                    G, I = follow_set(LHS, T)
+                    F = F.union(G)
+    return F, T
+                    
+print(f"{follow_set('Var', set())=}") 
+   
 def predict_set(seq: sequence, P=cfg):
     ps=first_set(sequence,set())
     if derives_to_lambda(sequence[0],list()):
@@ -195,10 +229,7 @@ def parse_tree(P, LL1, tokens):
 
 
             
-            
-
-
-
+    
 
 #tree class
 class Node:
