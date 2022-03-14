@@ -3,7 +3,6 @@ import sys
 import copy
 from typing import List
 
-from chess import F6
  #Usage: python cfg.py <input_file_name>
 input_file_name = sys.argv[1]
 
