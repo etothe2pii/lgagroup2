@@ -2,6 +2,8 @@ from dataclasses import dataclass
 import sys
 import copy
 from typing import List
+
+from chess import F6
  #Usage: python cfg.py <input_file_name>
 input_file_name = sys.argv[1]
 
@@ -111,7 +113,7 @@ print(f"{derives_to_lambda('startGoal', [])=}")
 # T is an empty set on first call of procedure
 # again, adding cfg list
 sequence = List[str]
-def first_set(seq: sequence, T, P=cfg):
+def first_set(seq: sequence, T: set(), P=cfg):
     # returns set of terminals {t in alphabet | seq => tpi},
     # updated set 
     # print(f"first trace, {seq=}, {T=}")
@@ -174,12 +176,18 @@ def follow_set(A: non_terminal, T: set, P=cfg):
     return F, T
                     
 print(f"{follow_set('Var', set())=}") 
-   
-def predict_set(seq: sequence, P=cfg):
-    ps=first_set(sequence,set())
-    if derives_to_lambda(sequence[0],list()):
-        ps.union(follow_set(sequence))
+
+def predict_set(prod_rule: sequence, P=cfg):
+    LHS, RHS = prod_rule[0], prod_rule[1:]
+    ps, _ = first_set(RHS, set(), cfg)
+    if RHS in non_terminals:
+        if derives_to_lambda(RHS, list()):
+            F, T = follow_set(LHS)
+            ps = ps.union(F)
     return ps
+    
+for p in cfg:
+    print(f"OUTPUT {p[0]} -> {p[1:]} | {predict_set(p)=}")
 
 def ll1_table(P=cfg):
     #returns a map of maps
