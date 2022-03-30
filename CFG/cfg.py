@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from email.policy import default
 import sys
 import copy
 from typing import List
@@ -241,6 +242,19 @@ class Node:
             child.pprint(level+1)
     # TODO implement tree-to-graphvis write format to make this like actually nice
 
+    #SDT method, can be overridden in children classes to execute any of the SDT procedures
+    def SDT():
+        return
+
+
+#Example of a child class
+
+# class LiftChild(Node):
+#     def SDT():
+#         if len(children) == 1 and len(children[0].children) == 1:
+#             children = children[0].children
+
+
 
 #List<List<GrammarElements>> Pcontaining production rules, indexed numerically 
 #Map<NonTerminal, Map<Terminal, int>> LL1 table for P
@@ -258,6 +272,7 @@ def parse_tree(P, LL1, tokens):
         # print(f"trace, {stack=}, {tokens=}")
         top = stack.pop()
         if top == "*": #end of rule character
+            current.SDT()
             current = current.parent
         elif top in terminals and top == tokens[0]:
             new = Node()
@@ -265,7 +280,6 @@ def parse_tree(P, LL1, tokens):
             current.children.append(new)
 
         elif top in non_terminals:
-            new = Node()
             stack.append("*")
             # print(f"{LL1=}, {top=}, {tokens[0]=}")
             # print(f"TRACE, {P[LL1[top][tokens[0]]]=}")
@@ -273,6 +287,12 @@ def parse_tree(P, LL1, tokens):
             LHS, RHS = prod_rule[0], prod_rule[1:]
             for rule in reversed(RHS):
                 stack.append(rule)
+            match top:
+                # case "liftChild":     #example
+                #     new = LiftChild()
+                case _:
+                    new = Node()
+            
             new.data = top
             new.parent = current
             current.children.append(new)
